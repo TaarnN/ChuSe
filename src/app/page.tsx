@@ -76,13 +76,8 @@ export default function Home() {
             onChange={(e: {
               target: { value: SetStateAction<string | null> };
             }) => setQuery(e.target.value)}
-            placeholder="Search with Churairat"
+            placeholder="Search Churairat"
             className="w-[80vw] border-black active:border-black max-w-[30rem] ml-0"
-            onKeyDown={(e: { key: string }) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
           />
           <Button
             onClick={handleSearch}
