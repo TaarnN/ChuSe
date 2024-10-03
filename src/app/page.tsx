@@ -76,6 +76,11 @@ export default function Home() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search with Churairat"
             className="w-[80vw] border-black active:border-black max-w-[30rem] ml-0"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
           <Button
             onClick={handleSearch}
@@ -134,7 +139,10 @@ export default function Home() {
         <Separator className="my-10 mx-[10vw] w-[80vw]" />
       </div>
 
-      <div ref={resultSectionRef} className="pt-[8vh]">
+      <div
+        ref={resultSectionRef}
+        className={results.length < 1 ? "" : "pt-[8vh]"}
+      >
         {results.map((result, index) => (
           <div key={index} className="mt-4 ml-8">
             <h2 className="font-medium text-xl sm:text-2xl md:text-3xl max-w-[60vw] md:max-w-[50vw] line-clamp-2">
