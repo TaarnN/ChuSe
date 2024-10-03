@@ -34,6 +34,7 @@ async function fetchGoogleSearchResults(query: string): Promise<string[]> {
 
     return urls.slice(1); // Return clean URLs
   } catch (error) {
+    console.log(query)
     console.error(`Error fetching search results: ${error}`);
     return [];
   }
