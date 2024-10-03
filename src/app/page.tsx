@@ -99,11 +99,11 @@ export default function Home() {
                 Churairat SE google api url (html):{" "}
               </p>
               <a
-                href={"http://localhost:3000/api/google?query=" + query}
+                href={"https://churairatse.vercel.app/api/google?query=" + query}
                 target="_blank"
                 className="text-emerald-500"
               >
-                {"http://localhost:3000/api/google?query=" + query}
+                {"https://churairatse.vercel.app/api/google?query=" + query}
               </a>
             </div>
             <div className="ml-8 flex">
@@ -111,11 +111,11 @@ export default function Home() {
                 Churairat SE search api url (links):{" "}
               </p>
               <a
-                href={"http://localhost:3000/api/search?query=" + query}
+                href={"https://churairatse.vercel.app/api/search?query=" + query}
                 target="_blank"
                 className="text-emerald-500"
               >
-                {"http://localhost:3000/api/search?query=" + query}
+                {"https://churairatse.vercel.app/api/search?query=" + query}
               </a>
             </div>
             <div className="ml-8 flex">
