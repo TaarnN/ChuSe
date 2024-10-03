@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, SetStateAction } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -72,11 +72,13 @@ export default function Home() {
         <div className="flex my-4 flex-col md:flex-row">
           <Input
             type="text"
-            value={query as string}
-            onChange={(e) => setQuery(e.target.value)}
+            value={query ?? ""}
+            onChange={(e: {
+              target: { value: SetStateAction<string | null> };
+            }) => setQuery(e.target.value)}
             placeholder="Search with Churairat"
             className="w-[80vw] border-black active:border-black max-w-[30rem] ml-0"
-            onKeyDown={(e) => {
+            onKeyDown={(e: { key: string }) => {
               if (e.key === "Enter") {
                 handleSearch();
               }
