@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { useSearchParams, usePathname } from "next/navigation";
+import Image from "next/image";
 
 interface wTextData {
   title: string;
@@ -13,10 +15,21 @@ interface wTextData {
 }
 
 export default function Home() {
-  const [query, setQuery] = useState("");
+  const pathname = usePathname();
+  const qrParams = useSearchParams();
+  const qr = qrParams.get("qr");
+
+  const [query, setQuery] = useState(qr);
   const [results, setResults] = useState<wTextData[]>([]);
   const [loading, setLoading] = useState(false);
   const [isShowUrls, setIsShowUrls] = useState<boolean>(false);
+
+  const resultSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleRefresh = () => {
+    window.history.replaceState(null, "", pathname);
+    setQuery("");
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -32,72 +45,96 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    if (results.length > 0) {
+      resultSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  }, [results]);
+
   return (
     <div>
-      <h1 className="my-10 text-5xl font-semibold tracking-wide text-center">
-        Churairat Search Engine | beta 0.0.1
-      </h1>
-      <div className="flex my-4">
-        <Input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search with Churairat"
-          className="w-[80vw] ml-[5vw] border-blue-500 active:border-blue-600"
+      <div className="h-screen flex flex-col justify-center items-center">
+        <Image
+          src={"/favicon.ico"}
+          alt="logo"
+          width={200}
+          height={200}
+          onClick={handleRefresh}
         />
-        <Button
-          onClick={handleSearch}
-          disabled={loading}
-          className="bg-blue-500 hover:bg-blue-400 active:bg-blue-600 ml-4"
+        <h1
+          className="my-10 text-5xl font-semibold tracking-wide text-center border border-black py-3 px-9 rounded-full"
+          onClick={handleRefresh}
         >
-          {loading ? "Searching..." : "Search"}
+          Churairat SE
+        </h1>
+        <div className="flex my-4 flex-col md:flex-row">
+          <Input
+            type="text"
+            value={query as string}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search with Churairat"
+            className="w-[80vw] border-black active:border-black max-w-[30rem] ml-0"
+          />
+          <Button
+            onClick={handleSearch}
+            disabled={loading}
+            className="bg-black hover:bg-black active:bg-black ml-4 md:mt-0 mt-4"
+          >
+            {loading ? "Searching..." : "Search"}
+          </Button>
+        </div>
+
+        <Button variant={"link"} onClick={() => setIsShowUrls(!isShowUrls)}>
+          {!isShowUrls ? "show urls" : "hide urls"}
         </Button>
+
+        {isShowUrls ? (
+          <>
+            <div className="ml-8 flex">
+              <p className="font-semibold mr-4">
+                Churairat SE google api url (html):{" "}
+              </p>
+              <a
+                href={"http://localhost:3000/api/google?query=" + query}
+                target="_blank"
+                className="text-emerald-500"
+              >
+                {"http://localhost:3000/api/google?query=" + query}
+              </a>
+            </div>
+            <div className="ml-8 flex">
+              <p className="font-semibold mr-4">
+                Churairat SE search api url (links):{" "}
+              </p>
+              <a
+                href={"http://localhost:3000/api/search?query=" + query}
+                target="_blank"
+                className="text-emerald-500"
+              >
+                {"http://localhost:3000/api/search?query=" + query}
+              </a>
+            </div>
+            <div className="ml-8 flex">
+              <p className="font-semibold mr-4">google url: </p>
+              <a
+                href={"https://www.google.com/search?q=" + query}
+                target="_blank"
+                className="text-emerald-500"
+              >
+                {"https://www.google.com/search?q=" + query}
+              </a>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+
+        <Separator className="my-10 mx-[10vw] w-[80vw]" />
       </div>
 
-      <Button variant={"link"} onClick={() => setIsShowUrls(!isShowUrls)}>
-        {!isShowUrls ? "show urls" : "hide urls"}
-      </Button>
-
-      {isShowUrls ? (
-        <>
-          <div className="ml-8 flex">
-            <p className="font-semibold mr-4">Churairat SE google api url (html): </p>
-            <a
-              href={"https://churairatse.vercel.app/api/google?query=" + query}
-              target="_blank"
-              className="text-emerald-500"
-            >
-              {"https://churairatse.vercel.app/api/google?query=" + query}
-            </a>
-          </div>
-          <div className="ml-8 flex">
-            <p className="font-semibold mr-4">Churairat SE search api url (links): </p>
-            <a
-              href={"https://churairatse.vercel.app/api/search?query=" + query}
-              target="_blank"
-              className="text-emerald-500"
-            >
-              {"https://churairatse.vercel.app/api/search?query=" + query}
-            </a>
-          </div>
-          <div className="ml-8 flex">
-            <p className="font-semibold mr-4">google url: </p>
-            <a
-              href={"https://www.google.com/search?q=" + query}
-              target="_blank"
-              className="text-emerald-500"
-            >
-              {"https://www.google.com/search?q=" + query}
-            </a>
-          </div>
-        </>
-      ) : (
-        <></>
-      )}
-
-      <Separator className="my-10 mx-[10vw] w-[80vw]" />
-
-      <div>
+      <div ref={resultSectionRef} className="pt-[8vh]">
         {results.map((result, index) => (
           <div key={index} className="mt-4 ml-8">
             <h2 className="font-medium text-xl sm:text-2xl md:text-3xl max-w-[60vw] md:max-w-[50vw] line-clamp-2">

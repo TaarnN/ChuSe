@@ -12,10 +12,9 @@ interface wTextData {
 async function fetchGoogleSearchResults(query: string): Promise<string[]> {
   try {
     const response = await axios.get(
-      `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(query)}`
+      `http://localhost:3000/api/google?query=${encodeURIComponent(query)}`
     );
 
-    console.log(response.data.gHtmlDat)
     const $ = cheerio.load(response.data.gHtmlDat);
     const urls: string[] = [];
 
