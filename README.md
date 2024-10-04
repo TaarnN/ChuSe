@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Churairat SE
 
-First, run the development server:
+![Favicon](/src/app/faviconsmall.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+A search engine made for Churairat Purichpapop, because she dropped out of my school. I only want to make for fun and change some UI. Go to the website [click here](https://churairatse.vercel.app/).
+
+## Crawling Steps
+Fetch HTML data of google by pattern [https://google.com/search?q=<query><another_queries>...](https://google.com/search?q=query)
+
+```javascript
+const response = await axios.get(
+  `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(
+    query
+  )}/* ... another queries */`
+);
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then use cheerio to get all results URLs
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```javascript
+const $ = cheerio.load(response.data.gHtmlDat);
+$("a[href^='/url']:not(span > a)").each((_, element) => {/* ... */})
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next, fetch HTML data of each URLs to get title and description
 
-## Learn More
+```javascript
+const response = await axios.get(url);
+const $ = cheerio.load(response.data);
+const title = $("title").text();
+const description = $('meta[name="description"]').attr("content") || "";
+```
 
-To learn more about Next.js, take a look at the following resources:
+Finally, render the results
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```javascript
+<div>
+  {results.map((result, index) => {/* ... */})}
+</div>
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Used By
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This SE is used by:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- me (only me)
+
+##
+By [Somchai Jaidee, Alias, Thailand](https://github.com/TaarnN)
