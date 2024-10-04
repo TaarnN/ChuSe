@@ -17,7 +17,7 @@ async function fetchGoogleSearchResults(
 ): Promise<string[]> {
   try {
     const response = await axios.get(
-      `http://localhost:3000/api/google?query=${encodeURIComponent(
+      `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(
         query
       )}&lang=${lang}&num=${num}`
     );
