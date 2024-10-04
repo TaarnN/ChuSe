@@ -224,7 +224,7 @@ export default function Home() {
           }`}
         >
           **If loading is very long, recommend changing the language or
-          adjusting the results' count less
+          adjusting the results&apos; count less
         </p>
       </div>
 

@@ -2,7 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { url } from "inspector";
 
 interface wTextData {
   title: string;
@@ -17,7 +16,7 @@ async function fetchGoogleSearchResults(
 ): Promise<string[]> {
   try {
     const response = await axios.get(
-      `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(
+      `http://localhost:3000/api/google?query=${encodeURIComponent(
         query
       )}&lang=${lang}&num=${num}`
     );
