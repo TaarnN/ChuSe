@@ -9,9 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.1",
     "@fontsource/fredoka-one": "^5.1.0",
     "@fontsource/prompt": "^5.1.0",
+    "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-icons": "^1.3.0",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "axios": "^1.7.7",
@@ -19,6 +23,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.446.0",
+    "mongodb": "^6.9.0",
     "next": "14.2.13",
     "next-sitemap": "^4.2.3",
     "react": "^18",

@@ -4,6 +4,7 @@ import { getWTextData, fetchGoogleSearchResults } from "@/app/utils/search";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
+  const num = searchParams.get("num");
 
   // Validate the query parameter
   if (!query || typeof query !== "string") {
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch Google search results based on the query
-  const urls = await fetchGoogleSearchResults(query);
+  const urls = await fetchGoogleSearchResults(query, num ?? "");
 
   // Fetch additional data for each URL in parallel
   const results = await Promise.all(

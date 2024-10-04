@@ -9,10 +9,12 @@ interface wTextData {
 }
 
 // Fetch Google search results
-async function fetchGoogleSearchResults(query: string): Promise<string[]> {
+async function fetchGoogleSearchResults(query: string, num: string = "10"): Promise<string[]> {
   try {
     const response = await axios.get(
-      `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(query)}`
+      `http://localhost:3000/api/google?num=${num}&query=${encodeURIComponent(
+        query
+      )}`
     );
 
     const $ = cheerio.load(response.data.gHtmlDat);
@@ -32,15 +34,13 @@ async function fetchGoogleSearchResults(query: string): Promise<string[]> {
       }
     });
 
-    return urls.slice(1); // Return clean URLs
+    return urls.slice(1);
   } catch (error) {
-    console.log(query)
     console.error(`Error fetching search results: ${error}`);
     return [];
   }
 }
 
-// Get title and description of a website
 async function getWTextData(url: string): Promise<wTextData> {
   try {
     const response = await axios.get(url);

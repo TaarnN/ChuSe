@@ -1,12 +1,31 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useRef, useEffect, SetStateAction } from "react";
 import axios from "axios";
+import run from "./utils/db";
+import { useSearchParams, usePathname } from "next/navigation";
+import Image from "next/image";
+import { SettingOutlined } from "@ant-design/icons";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { useSearchParams, usePathname } from "next/navigation";
-import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface wTextData {
   title: string;
@@ -22,7 +41,8 @@ export default function Home() {
   const [query, setQuery] = useState(qr);
   const [results, setResults] = useState<wTextData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isShowUrls, setIsShowUrls] = useState<boolean>(false);
+
+  const [numMuch, setNumMuch] = useState<string>("20");
 
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +55,7 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await axios.get(`/api/search`, {
-        params: { query },
+        params: { query, num: numMuch },
       });
       setResults(response.data);
     } catch (error) {
@@ -55,6 +75,49 @@ export default function Home() {
 
   return (
     <div>
+      {/* Search Settings */}
+      <div className="w-fit h-fit fixed top-4 right-4">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant={"outline"} className="rounded-xl size-14">
+              <SettingOutlined />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Search Settings</DialogTitle>
+            </DialogHeader>
+            <Separator />
+            <div>
+              <h1 className="font-medium mb-4">
+                Search Results Number{" "}
+                <p className="text-red-800">
+                  **lots of results may make slow loading
+                </p>
+              </h1>
+              <Select onValueChange={setNumMuch} value={numMuch}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 10, 20, 30, 40, 50, 100].map((value, index) => (
+                    <SelectItem key={index} value={`${value}`}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter className="sm:justify-end">
+              <DialogClose asChild>
+                <Button className="max-w-[10rem] px-12">Ok</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Search Input */}
       <div className="h-screen flex flex-col justify-center items-center">
         <Image
           src={"/favicon.ico"}
@@ -78,6 +141,11 @@ export default function Home() {
             }) => setQuery(e.target.value)}
             placeholder="Search Churairat"
             className="w-[80vw] border-black active:border-black max-w-[30rem] ml-0"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
           <Button
             onClick={handleSearch}
@@ -87,80 +155,38 @@ export default function Home() {
             {loading ? "Searching..." : "Search"}
           </Button>
         </div>
-
-        <Button variant={"link"} onClick={() => setIsShowUrls(!isShowUrls)}>
-          {!isShowUrls ? "show urls" : "hide urls"}
-        </Button>
-
-        {isShowUrls ? (
-          <>
-            <div className="ml-8 flex">
-              <p className="font-semibold mr-4">
-                Churairat SE google api url (html):{" "}
-              </p>
-              <a
-                href={"https://churairatse.vercel.app/api/google?query=" + query}
-                target="_blank"
-                className="text-emerald-500"
-              >
-                {"https://churairatse.vercel.app/api/google?query=" + query}
-              </a>
-            </div>
-            <div className="ml-8 flex">
-              <p className="font-semibold mr-4">
-                Churairat SE search api url (links):{" "}
-              </p>
-              <a
-                href={"https://churairatse.vercel.app/api/search?query=" + query}
-                target="_blank"
-                className="text-emerald-500"
-              >
-                {"https://churairatse.vercel.app/api/search?query=" + query}
-              </a>
-            </div>
-            <div className="ml-8 flex">
-              <p className="font-semibold mr-4">google url: </p>
-              <a
-                href={"https://www.google.com/search?q=" + query}
-                target="_blank"
-                className="text-emerald-500"
-              >
-                {"https://www.google.com/search?q=" + query}
-              </a>
-            </div>
-          </>
-        ) : (
-          <></>
-        )}
-
-        <Separator className="my-10 mx-[10vw] w-[80vw]" />
       </div>
 
+      {/* Search Result */}
       <div
         ref={resultSectionRef}
         className={results.length < 1 ? "" : "pt-[8vh]"}
       >
-        {results.map((result, index) => (
-          <div key={index} className="mt-4 ml-8">
-            <h2 className="font-medium text-xl sm:text-2xl md:text-3xl max-w-[60vw] md:max-w-[50vw] line-clamp-2">
-              {result.title}
-            </h2>
-            <p className="mb-4 max-w-[70vw] md:max-w-[60vw] text-muted-foreground mt-4 truncate text-base sm:text-md md:text-lg">
-              {result.description}
-            </p>
-            <a
-              href={result.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-fit"
-            >
-              <p className="text-blue-400 truncate">
-                {decodeURIComponent(result.url)}
+        {results.map((result, index) => {
+          console.log(JSON.stringify(results));
+
+          return (
+            <div key={index} className="mt-4 ml-8">
+              <h2 className="font-medium text-xl sm:text-2xl md:text-3xl max-w-[60vw] md:max-w-[50vw] line-clamp-2">
+                {result.title}
+              </h2>
+              <p className="mb-4 max-w-[70vw] md:max-w-[60vw] text-muted-foreground mt-4 truncate text-base sm:text-md md:text-lg">
+                {result.description}
               </p>
-            </a>
-            <Separator className="ml-8 w-[40vw] mt-4" />
-          </div>
-        ))}
+              <a
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-fit"
+              >
+                <p className="text-blue-400 truncate">
+                  {decodeURIComponent(result.url)}
+                </p>
+              </a>
+              <Separator className="ml-8 w-[40vw] mt-4" />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
