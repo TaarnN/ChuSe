@@ -65,7 +65,7 @@ export default function Home() {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/search`, {
+      const response = await axios.get(`http://localhost:3000/api/search`, {
         params: { query, num: numMuch, lang },
       });
       setResults(response.data);

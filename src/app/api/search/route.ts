@@ -7,15 +7,12 @@ export async function GET(req: NextRequest) {
   const num = searchParams.get("num");
   const lang = searchParams.get("lang");
 
-  // Validate the query parameter
   if (!query || typeof query !== "string") {
     return NextResponse.json({ error: "Invalid query" }, { status: 400 });
   }
 
-  // Fetch Google search results based on the query
   const urls = await fetchGoogleSearchResults(query, num ?? "", lang ?? "en");
 
-  // Fetch additional data for each URL in parallel
   const results = await Promise.all(
     urls.map(async (url: string) => {
       const data = await getWTextData(url);
@@ -23,6 +20,5 @@ export async function GET(req: NextRequest) {
     })
   );
 
-  // Return the results as a JSON response
   return NextResponse.json(results);
 }
