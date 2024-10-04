@@ -12,7 +12,7 @@ interface wTextData {
 async function fetchGoogleSearchResults(query: string, num: string = "10"): Promise<string[]> {
   try {
     const response = await axios.get(
-      `http://localhost:3000/api/google?num=${num}&query=${encodeURIComponent(
+      `https://churairatse.vercel.app/api/google?num=${num}&query=${encodeURIComponent(
         query
       )}`
     );
