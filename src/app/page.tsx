@@ -4,9 +4,14 @@
 import { useState, useRef, useEffect, SetStateAction } from "react";
 import axios from "axios";
 import run from "./utils/db";
+import { languages } from "./utils/googleLangs";
 import { useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
-import { SettingOutlined } from "@ant-design/icons";
+import {
+  SettingOutlined,
+  UpCircleOutlined,
+  DownCircleOutlined,
+} from "@ant-design/icons";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -25,7 +30,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
 } from "@/components/ui/select";
+import { load } from "cheerio";
 
 interface wTextData {
   title: string;
@@ -41,21 +48,25 @@ export default function Home() {
   const [query, setQuery] = useState(qr);
   const [results, setResults] = useState<wTextData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLongEnough, setIsLongEnough] = useState(false);
 
   const [numMuch, setNumMuch] = useState<string>("20");
+  const [lang, setLang] = useState<string>("en");
 
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
   const handleRefresh = () => {
     window.history.replaceState(null, "", pathname);
     setQuery("");
+    setResults([]);
+    setLoading(false);
   };
 
   const handleSearch = async () => {
     setLoading(true);
     try {
       const response = await axios.get(`/api/search`, {
-        params: { query, num: numMuch },
+        params: { query, num: numMuch, lang },
       });
       setResults(response.data);
     } catch (error) {
@@ -73,14 +84,51 @@ export default function Home() {
     }
   }, [results]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (loading) {
+        const timer = setTimeout(() => {
+          setIsLongEnough(true);
+        }, 7500);
+        return () => clearTimeout(timer);
+      } else {
+        setIsLongEnough(false);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
   return (
     <div>
+      {/* Back to top & Go down Buttons */}
+      <div className="fixed w-fit h-fit top-6 left-6 flex">
+        <Button
+          variant={"outline"}
+          className="rounded-xl size-14 mr-4"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <UpCircleOutlined className="text-xl" />
+        </Button>
+        <Button
+          variant={"outline"}
+          className="rounded-xl size-14"
+          onClick={() =>
+            resultSectionRef.current?.scrollIntoView({
+              behavior: "smooth",
+            })
+          }
+        >
+          <DownCircleOutlined className="text-xl" />
+        </Button>
+      </div>
+
       {/* Search Settings */}
-      <div className="w-fit h-fit fixed top-4 right-4">
+      <div className="w-fit h-fit fixed top-6 right-6">
         <Dialog>
           <DialogTrigger asChild>
             <Button variant={"outline"} className="rounded-xl size-14">
-              <SettingOutlined />
+              <SettingOutlined className="text-xl" />
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
@@ -90,7 +138,7 @@ export default function Home() {
             <Separator />
             <div>
               <h1 className="font-medium mb-4">
-                Search Results Number{" "}
+                How Much
                 <p className="text-red-800">
                   **lots of results may make slow loading
                 </p>
@@ -108,6 +156,21 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <h1 className="font-medium mb-4">Language</h1>
+              <Select onValueChange={setLang} value={lang}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(languages).map((value, index) => (
+                    <SelectItem key={index} value={languages[value]}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <DialogFooter className="sm:justify-end">
               <DialogClose asChild>
                 <Button className="max-w-[10rem] px-12">Ok</Button>
@@ -117,7 +180,7 @@ export default function Home() {
         </Dialog>
       </div>
 
-      {/* Search Input */}
+      {/* Search Home */}
       <div className="h-screen flex flex-col justify-center items-center">
         <Image
           src={"/favicon.ico"}
@@ -150,11 +213,19 @@ export default function Home() {
           <Button
             onClick={handleSearch}
             disabled={loading}
-            className="bg-black hover:bg-black active:bg-black ml-4 md:mt-0 mt-4"
+            className="bg-black hover:bg-black active:bg-black ml-4 md:mr-0 mr-4 md:mt-0 mt-4"
           >
             {loading ? "Searching..." : "Search"}
           </Button>
         </div>
+        <p
+          className={`mt-4 text-orange-300 ${
+            !isLongEnough ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          **If loading is very long, recommend changing the language or
+          adjusting the results' count less
+        </p>
       </div>
 
       {/* Search Result */}

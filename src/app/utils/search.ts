@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { url } from "inspector";
 
 interface wTextData {
   title: string;
@@ -9,12 +10,16 @@ interface wTextData {
 }
 
 // Fetch Google search results
-async function fetchGoogleSearchResults(query: string, num: string = "10"): Promise<string[]> {
+async function fetchGoogleSearchResults(
+  query: string,
+  num: string = "10",
+  lang: string = "en"
+): Promise<string[]> {
   try {
     const response = await axios.get(
-      `https://churairatse.vercel.app/api/google?num=${num}&query=${encodeURIComponent(
+      `http://localhost:3000/api/google?query=${encodeURIComponent(
         query
-      )}`
+      )}&lang=${lang}&num=${num}`
     );
 
     const $ = cheerio.load(response.data.gHtmlDat);
@@ -27,16 +32,19 @@ async function fetchGoogleSearchResults(query: string, num: string = "10"): Prom
         const cleanUrl = href.split("/url?q=")[1]?.split("&")[0];
         if (
           cleanUrl &&
-          (cleanUrl.startsWith("https://") || cleanUrl.startsWith("http://"))
+          (cleanUrl.startsWith("https://") || cleanUrl.startsWith("http://")) &&
+          !cleanUrl.includes(
+            "ANd9GcQjzC2JyZDZ_RaWf0qp11K0lcvB6b6kYNMoqtZAQ9hiPZ4cTIOB"
+          )
         ) {
           urls.push(decodeURIComponent(cleanUrl));
         }
       }
     });
 
-    return urls.slice(1);
+    return urls.slice(1, urls.length - 2);
   } catch (error) {
-    console.error(`Error fetching search results: ${error}`);
+    console.error(`Error fetching search results (by search.ts): ${error}`);
     return [];
   }
 }
@@ -50,7 +58,7 @@ async function getWTextData(url: string): Promise<wTextData> {
 
     return { title, description };
   } catch (error) {
-    console.error(`Error fetching site data: ${error}`);
+    console.error(`Error fetching site data (wTextData) at "${url}": ${error}`);
     return { title: "", description: "" };
   }
 }
@@ -66,13 +74,11 @@ export default async function handler(
 
   const urls = await fetchGoogleSearchResults(query);
 
-  const results = await Promise.all(
-    urls.map(async (url) => {
-      const data = await getWTextData(url);
-      return { ...data, url };
-    })
-  );
-
+  const results = urls.map(async (url) => {
+    const wdat = await getWTextData(url);
+    console.log({ ...wdat, url });
+    return { ...wdat, url };
+  });
   res.status(200).json(results);
 }
 

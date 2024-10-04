@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
   const num = searchParams.get("num");
+  const lang = searchParams.get("lang");
 
   // Validate the query parameter
   if (!query || typeof query !== "string") {
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch Google search results based on the query
-  const urls = await fetchGoogleSearchResults(query, num ?? "");
+  const urls = await fetchGoogleSearchResults(query, num ?? "", lang ?? "en");
 
   // Fetch additional data for each URL in parallel
   const results = await Promise.all(
