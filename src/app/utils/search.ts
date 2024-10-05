@@ -10,8 +10,9 @@ interface wTextData {
 
 // Fetch Google search results
 async function fetchGoogleSearchResults(
+  isFastMode: boolean = false,
   query: string,
-  num: string = "10",
+  num: string = "20",
   lang: string = "en"
 ): Promise<string[]> {
   try {
@@ -22,26 +23,82 @@ async function fetchGoogleSearchResults(
     );
 
     const $ = cheerio.load(response.data.gHtmlDat);
-    const urls: string[] = [];
 
-    // Adjusted selector to target links correctly
-    $("a[href^='/url']:not(span > a)").each((_, element) => {
-      const href = $(element).attr("href");
-      if (href) {
-        const cleanUrl = href.split("/url?q=")[1]?.split("&")[0];
-        if (
-          cleanUrl &&
-          (cleanUrl.startsWith("https://") || cleanUrl.startsWith("http://")) &&
-          !cleanUrl.includes(
-            "ANd9GcQjzC2JyZDZ_RaWf0qp11K0lcvB6b6kYNMoqtZAQ9hiPZ4cTIOB"
-          )
-        ) {
-          urls.push(decodeURIComponent(cleanUrl));
+    if (!isFastMode) {
+      const urls: string[] = [];
+
+      $("a[href^='/url']:not(span > a)").each((_, element) => {
+        const href = $(element).attr("href");
+        if (href && href.includes("/url?q=")) {
+          const cleanUrl = href.split("/url?q=")[1]?.split("&")[0];
+          if (
+            cleanUrl &&
+            (cleanUrl.startsWith("https://") ||
+              cleanUrl.startsWith("http://")) &&
+            !cleanUrl.includes(
+              "ANd9GcQjzC2JyZDZ_RaWf0qp11K0lcvB6b6kYNMoqtZAQ9hiPZ4cTIOB"
+            )
+          ) {
+            urls.push(decodeURIComponent(cleanUrl));
+          }
         }
-      }
-    });
+      });
 
-    return urls.slice(1, urls.length - 2);
+      return ["false", ...urls.slice(1, urls.length - 2)];
+    } else {
+      const descriptions: string[] = [];
+      const titles: string[] = [];
+      let URLs: string[] = [];
+
+      // Description-G code
+      $(
+        "div:not([class]) > div:not([class]) > div.BNeawe.s3v9rd.AP7Wnd, div:not([class]) > div.v9i61e > div.BNeawe.s3v9rd.AP7Wnd:not(:has(span))"
+      ).each((index, element) => {
+        const inner = $(element).html() ?? "";
+        if (!(inner?.includes("<span") && inner?.includes("</span"))) {
+          descriptions.push(inner);
+        } else if (
+          inner?.includes("<span") &&
+          inner?.includes("</span") &&
+          inner.includes("<br")
+        ) {
+          descriptions.push(inner);
+        }
+      });
+
+      // Titles-G code
+      $("div.BNeawe.vvjwJb.AP7Wnd").each((index, element) => {
+        titles.push($(element).html() ?? "");
+      });
+
+      // URLs-G code
+      $(
+        "div > div > a[href^='/url']:not(span > a):not(:has(span)):not(:has(img))"
+      ).each((_, element) => {
+        const href = $(element).attr("href");
+        if (href && href.includes("/url?q=")) {
+          const cleanUrl = href.split("/url?q=")[1]?.split("&")[0];
+          if (
+            cleanUrl &&
+            (cleanUrl.startsWith("https://") ||
+              cleanUrl.startsWith("http://")) &&
+            !cleanUrl.includes(
+              "ANd9GcQjzC2JyZDZ_RaWf0qp11K0lcvB6b6kYNMoqtZAQ9hiPZ4cTIOB"
+            )
+          ) {
+            URLs.push(decodeURIComponent(cleanUrl));
+          }
+        }
+      });
+      URLs = URLs.slice(1, URLs.length - 2);
+
+      return [
+        "true",
+        ...URLs.map((url, index) => {
+          return `{url: "${url}", title: "${titles[index]}", description: "${descriptions[index]}"}`;
+        }),
+      ];
+    }
   } catch (error) {
     console.error(`Error fetching search results (by search.ts): ${error}`);
     return [];
@@ -71,7 +128,7 @@ export default async function handler(
     return res.status(400).json({ error: "Invalid query" });
   }
 
-  const urls = await fetchGoogleSearchResults(query);
+  const urls = await fetchGoogleSearchResults(false, query);
 
   const results = urls.map(async (url) => {
     const wdat = await getWTextData(url);

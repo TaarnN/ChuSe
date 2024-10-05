@@ -3,7 +3,6 @@
 
 import { useState, useRef, useEffect, SetStateAction } from "react";
 import axios from "axios";
-import run from "./utils/db";
 import { languages } from "./utils/googleLangs";
 import { useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
@@ -11,6 +10,7 @@ import {
   SettingOutlined,
   UpCircleOutlined,
   DownCircleOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -30,9 +30,21 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectGroup,
 } from "@/components/ui/select";
-import { load } from "cheerio";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface wTextData {
   title: string;
@@ -49,9 +61,11 @@ export default function Home() {
   const [results, setResults] = useState<wTextData[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLongEnough, setIsLongEnough] = useState(false);
+  const [isLangSelectOpen, setIsLangSelectOpen] = useState(false);
 
   const [numMuch, setNumMuch] = useState<string>("20");
-  const [lang, setLang] = useState<string>("en");
+  const [lang, setLang] = useState<string>("English (US)");
+  const [isFastMode, setIsFastMode] = useState("false");
 
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +80,12 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await axios.get(`https://churairatse.vercel.app/api/search`, {
-        params: { query, num: numMuch, lang },
+        params: {
+          isFastMode,
+          query,
+          num: numMuch,
+          lang: languages.find((each) => each.label === lang)?.value,
+        },
       });
       setResults(response.data);
     } catch (error) {
@@ -139,7 +158,7 @@ export default function Home() {
             <div>
               <h1 className="font-medium mb-4">
                 How Much
-                <p className="text-red-800">
+                <p className="text-red-800 text-sm">
                   **lots of results may make slow loading
                 </p>
               </h1>
@@ -156,18 +175,106 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
+            <Separator />
             <div>
               <h1 className="font-medium mb-4">Language</h1>
-              <Select onValueChange={setLang} value={lang}>
+              <Popover
+                open={isLangSelectOpen}
+                onOpenChange={setIsLangSelectOpen}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    role="button" // Change "combobox" to "button"
+                    aria-expanded={isLangSelectOpen} // Change to boolean value
+                    className="w-[200px] justify-between"
+                    onClick={() => setIsLangSelectOpen(!isLangSelectOpen)} // Add onClick handler
+                  >
+                    {lang
+                      ? languages.find((language) => language.label === lang)
+                          ?.label
+                      : "Select language..."}
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                    >
+                      <path
+                        d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.73379 3.0974 7.61933 3.04999 7.49999 3.04999C7.38064 3.04999 7.26618 3.0974 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.35753 11.9939 7.64245 11.9939 7.81819 11.8182L10.0682 9.56819Z"
+                        fill="currentColor"
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search language..."
+                      className="h-9"
+                    />
+                    <CommandList>
+                      <CommandEmpty>No language found.</CommandEmpty>
+                      <CommandGroup>
+                        {languages.map((language) => (
+                          <CommandItem
+                            key={language.label}
+                            value={language.label}
+                            onSelect={(currentValue) => {
+                              setLang(
+                                currentValue === lang ? "" : currentValue
+                              );
+                              setIsLangSelectOpen(false);
+                            }}
+                          >
+                            {language.label}
+                            <svg
+                              className={cn(
+                                "ml-auto h-4 w-4",
+                                lang === language.label
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                              width="15"
+                              height="15"
+                              viewBox="0 0 15 15"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"
+                                fill="currentColor"
+                                fill-rule="evenodd"
+                                clip-rule="evenodd"
+                              ></path>
+                            </svg>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <Separator />
+            <div>
+              <h1 className="font-medium mb-4">
+                Fast Mode | beta
+                <p className="text-red-800 text-sm">
+                  **too much results' count may make results incorrect
+                </p>
+              </h1>
+              <Select onValueChange={setIsFastMode} value={isFastMode}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(languages).map((value, index) => (
-                    <SelectItem key={index} value={languages[value]}>
-                      {value}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="false">off</SelectItem>
+                  <SelectItem value="true">on</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -234,8 +341,6 @@ export default function Home() {
         className={results.length < 1 ? "" : "pt-[8vh]"}
       >
         {results.map((result, index) => {
-          console.log(JSON.stringify(results));
-
           return (
             <div key={index} className="mt-4 ml-8">
               <h2 className="font-medium text-xl sm:text-2xl md:text-3xl max-w-[60vw] md:max-w-[50vw] line-clamp-2">

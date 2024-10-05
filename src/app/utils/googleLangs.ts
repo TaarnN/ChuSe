@@ -1,4 +1,4 @@
-export const languages: { [key: string]: string } = {
+export const languages: { [key: string]: string }[] = Object.entries({
   Afrikaans: "af",
   Amharic: "am",
   Arabic: "ar",
@@ -56,4 +56,4 @@ export const languages: { [key: string]: string } = {
   Vietnamese: "vi",
   Welsh: "cy",
   Zulu: "zu",
-};
+}).map(([label, value]) => ({ label, value }));
