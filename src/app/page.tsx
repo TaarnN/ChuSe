@@ -3,14 +3,13 @@
 
 import { useState, useRef, useEffect, SetStateAction } from "react";
 import axios from "axios";
-import { languages } from "./utils/googleLangs";
+import { languages } from "./utils/langs";
 import { useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   SettingOutlined,
   UpCircleOutlined,
   DownCircleOutlined,
-  CheckOutlined,
 } from "@ant-design/icons";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -55,17 +54,19 @@ interface wTextData {
 export default function Home() {
   const pathname = usePathname();
   const qrParams = useSearchParams();
-  const qr = qrParams.get("qr");
+  const qr = qrParams.get("q");
 
   const [query, setQuery] = useState(qr);
   const [results, setResults] = useState<wTextData[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLongEnough, setIsLongEnough] = useState(false);
   const [isLangSelectOpen, setIsLangSelectOpen] = useState(false);
+  const [specificweb, setSpecificweb] = useState("");
 
   const [numMuch, setNumMuch] = useState<string>("20");
   const [lang, setLang] = useState<string>("English (US)");
-  const [isFastMode, setIsFastMode] = useState("false");
+
+  const [isFastMode, setIsFastMode] = useState("true");
 
   const resultSectionRef = useRef<HTMLDivElement>(null);
 
@@ -85,6 +86,7 @@ export default function Home() {
           query,
           num: numMuch,
           lang: languages.find((each) => each.label === lang)?.value,
+          specificweb: specificweb !== "none" ? specificweb : "",
         },
       });
       setResults(response.data);
@@ -278,6 +280,41 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
+            <Separator />
+            <div>
+              <h1 className="font-medium mb-4">
+                Specific Website - {specificweb}
+              </h1>
+              <Select onValueChange={setSpecificweb} value={specificweb}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">any</SelectItem>
+                  {[
+                    "google.com",
+                    "youtube.com",
+                    "facebook.com",
+                    "wikipedia.org",
+                    "instagram.com",
+                    "reddit.com",
+                  ].map((v, i) => {
+                    return (
+                      <SelectItem key={i} value={v}>
+                        {v}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              <Input
+                className="mt-4 w-2/3"
+                placeholder="other, please type"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSpecificweb(e.target.value)
+                }
+              />
+            </div>
             <DialogFooter className="sm:justify-end">
               <DialogClose asChild>
                 <Button className="max-w-[10rem] px-12">Ok</Button>
@@ -351,7 +388,7 @@ export default function Home() {
               </p>
               <a
                 href={result.url}
-                target="_blank"
+                target="_self"
                 rel="noopener noreferrer"
                 className="w-fit"
               >

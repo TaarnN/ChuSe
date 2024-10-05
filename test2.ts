@@ -2,7 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import chalk from "chalk";
 
-export const url = "https://google.com/search?q=Hello%20world&lr=lang_en&num=100";
+export const url = "https://google.com/search?q=Youtube%20X&lr=lang_en&num=20";
 
 (async () => {
   const response = await axios.get(url);
