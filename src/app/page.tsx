@@ -79,7 +79,7 @@ export default function Home() {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`https://churairatse.vercel.app/api/search`, {
+      const response = await axios.get(`http://localhost:3000/api/search`, {
         params: {
           isFastMode,
           query,
@@ -265,7 +265,7 @@ export default function Home() {
               <h1 className="font-medium mb-4">
                 Fast Mode | beta
                 <p className="text-red-800 text-sm">
-                  **too much results' count may make results incorrect
+                  **too much results&apos; count may make results incorrect
                 </p>
               </h1>
               <Select onValueChange={setIsFastMode} value={isFastMode}>

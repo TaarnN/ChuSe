@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWTextData, fetchGoogleSearchResults } from "@/app/utils/search";
-import chalk from "chalk";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
