@@ -19,7 +19,7 @@ async function fetchGoogleSearchResults(
 ): Promise<wTextData[]> {
   try {
     const response = await axios.get(
-      `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(query)}${
+      `http://localhost:3000/api/google?query=${encodeURIComponent(query)}${
         specificweb !== "" ? `%20%20site:(${specificweb})` : ""
       }&lr=lang_${lang}&num=${num}`
     );
