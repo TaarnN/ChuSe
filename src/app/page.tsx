@@ -97,7 +97,7 @@ export default function Home() {
     );
     setIsShowCalcer(lowerQuery.includes("calc"));
     try {
-      const response = await axios.get(`http://localhost:3000/api/search`, {
+      const response = await axios.get(`https://churairatse.vercel.app/api/search`, {
         params: {
           isFastMode,
           query,
