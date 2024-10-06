@@ -5,7 +5,7 @@ import Head from "next/head";
 
 export const metadata: Metadata = {
   title: "Churairat SE",
-  description: "Churairat Search Engine Version Beta 0.3.0|5oc24/2",
+  description: "Churairat Search Engine Version Beta 0.2.3|6oc24",
 };
 
 export default function RootLayout({
