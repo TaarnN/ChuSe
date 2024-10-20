@@ -58,7 +58,7 @@ interface wTextData {
 export default function Home() {
   const pathname = usePathname();
   const qrParams = useSearchParams();
-  const qr = qrParams.get("q");
+  const qr = qrParams.get("q") || qrParams.get("query") || qrParams.get("qr");
 
   const [query, setQuery] = useState(qr);
   const [results, setResults] = useState<wTextData[]>([]);
@@ -66,6 +66,7 @@ export default function Home() {
   const [isLongEnough, setIsLongEnough] = useState(false);
   const [isLangSelectOpen, setIsLangSelectOpen] = useState(false);
   const [specificweb, setSpecificweb] = useState("");
+  const [isSafeSearch, setIsSafeSearch] = useState(true);
 
   // is show tools
   const [isShowTranslator, setIsShowTranslator] = useState(false);
@@ -88,14 +89,6 @@ export default function Home() {
 
   const handleSearch = async () => {
     setLoading(true);
-
-    const lowerQuery = query?.toLowerCase() || "";
-
-    setIsShowTranslator(lowerQuery.includes("transla"));
-    setIsShowColorPicker(
-      lowerQuery.includes("col") && lowerQuery.includes("pick")
-    );
-    setIsShowCalcer(lowerQuery.includes("calc"));
     try {
       const response = await axios.get(`https://churairatse.vercel.app/api/search`, {
         params: {
@@ -104,6 +97,7 @@ export default function Home() {
           num: numMuch,
           lang: languages.find((each) => each.label === lang)?.value,
           specificweb: specificweb !== "none" ? specificweb : "",
+          isSafeSearch,
         },
       });
       setResults(response.data);
@@ -116,6 +110,22 @@ export default function Home() {
 
   useEffect(() => {
     if (results.length > 0) {
+      setIsShowTranslator(
+        results.some((result) => result.url.toLowerCase().includes("translate"))
+      );
+      setIsShowColorPicker(
+        results.some(
+          (result) =>
+            result.url.toLowerCase().includes("col") &&
+            result.url.toLowerCase().includes("pick")
+        )
+      );
+      setIsShowCalcer(
+        results.some((result) =>
+          result.description.toLowerCase().includes("calc")
+        )
+      );
+
       resultSectionRef.current?.scrollIntoView({
         behavior: "smooth",
       });
@@ -175,12 +185,43 @@ export default function Home() {
             </DialogHeader>
             <Separator />
             <div>
+              <h1 className="font-medium mb-4">Fast Mode | beta</h1>
+              <Select onValueChange={setIsFastMode} value={isFastMode}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="false">off</SelectItem>
+                  <SelectItem value="true">on</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <div>
               <h1 className="font-medium mb-4">
-                How Much
+                Safe Search
                 <p className="text-red-800 text-sm">
-                  **lots of results may make slow loading
+                  **adult content may appear
                 </p>
               </h1>
+              <Select
+                onValueChange={(t) =>
+                  setIsSafeSearch(t === "off" ? false : true)
+                }
+                value={isSafeSearch ? "on" : "off"}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={"on"}>on</SelectItem>
+                  <SelectItem value={"off"}>off</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Separator />
+            <div>
+              <h1 className="font-medium mb-4">How Much</h1>
               <Select onValueChange={setNumMuch} value={numMuch}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Select" />
@@ -282,24 +323,6 @@ export default function Home() {
             <Separator />
             <div>
               <h1 className="font-medium mb-4">
-                Fast Mode | beta
-                <p className="text-red-800 text-sm">
-                  **too much results&apos; count may make results incorrect
-                </p>
-              </h1>
-              <Select onValueChange={setIsFastMode} value={isFastMode}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="false">off</SelectItem>
-                  <SelectItem value="true">on</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Separator />
-            <div>
-              <h1 className="font-medium mb-4">
                 Specific Website - {specificweb}
               </h1>
               <Select onValueChange={setSpecificweb} value={specificweb}>
@@ -332,6 +355,7 @@ export default function Home() {
                 }
               />
             </div>
+
             <DialogFooter className="sm:justify-end">
               <DialogClose asChild>
                 <Button className="max-w-[10rem] px-12">Ok</Button>
@@ -418,6 +442,18 @@ export default function Home() {
           return (
             <div key={index} className="mt-4 ml-8">
               <h2 className="font-medium text-xl sm:text-2xl md:text-3xl max-w-[60vw] md:max-w-[50vw] line-clamp-2">
+                <span>
+                  <Image
+                    src={`https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=16&url=${result.url
+                      .split("/")
+                      .slice(0, 3)
+                      .join("/")}`}
+                    alt="ico"
+                    width={27}
+                    height={27}
+                    className="inline m-2 border p-1 rounded-full"
+                  />
+                </span>
                 {title}
               </h2>
               <p className="mb-4 max-w-[70vw] md:max-w-[60vw] text-muted-foreground mt-4 truncate text-base sm:text-md md:text-lg">

@@ -8,12 +8,14 @@ export async function GET(req: NextRequest) {
   const lang = searchParams.get("lang");
   const isFastMode = searchParams.get("isFastMode");
   const specificweb = searchParams.get("specificweb");
+  const isSafeSearch = searchParams.get("isSafeSearch");
 
   if (!query || typeof query !== "string") {
     return NextResponse.json({ error: "Invalid query" }, { status: 400 });
   }
 
   const isFastModeBool = isFastMode === "true" ? true : false;
+  const isSafeSearchBool = isSafeSearch === "true" ? true : false;
 
   const fetchedResults = await fetchGoogleSearchResults(
     isFastModeBool,
@@ -21,6 +23,7 @@ export async function GET(req: NextRequest) {
     num || "",
     lang || "en",
     specificweb || "",
+    isSafeSearchBool
   );
 
   return NextResponse.json(fetchedResults);

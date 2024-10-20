@@ -15,13 +15,14 @@ async function fetchGoogleSearchResults(
   query: string,
   num: string = "20",
   lang: string = "en",
-  specificweb: string = ""
+  specificweb: string = "",
+  isSafeSearch: boolean = true,
 ): Promise<wTextData[]> {
   try {
     const response = await axios.get(
       `https://churairatse.vercel.app/api/google?query=${encodeURIComponent(query)}${
         specificweb !== "" ? `%20%20site:(${specificweb})` : ""
-      }&lr=lang_${lang}&num=${num}`
+      }&lr=lang_${lang}&num=${num}&safe=${isSafeSearch}`
     );
 
     const $ = cheerio.load(response.data.gHtmlDat);
@@ -48,7 +49,9 @@ async function fetchGoogleSearchResults(
         }
       );
 
-      const allUrls = urls.slice(1, urls.length - 2);
+      const allUrls = urls
+        .slice(1, urls.length - 2)
+        .filter((url) => !url.startsWith("https://www.google.com/preferences"));
 
       const allWData = allUrls.map(async (url) => {
         const wdat = await getWTextData(url);
@@ -105,7 +108,9 @@ async function fetchGoogleSearchResults(
           }
         }
       });
-      URLs = URLs.slice(1, URLs.length - 2);
+      URLs = URLs.slice(1, URLs.length - 2).filter(
+        (url) => !url.startsWith("https://www.google.com/preferences")
+      );
 
       return URLs.map((url, index) => {
         return {
